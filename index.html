@@ -1,20 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <h1>websocket</h1>
-    <script>
-      const proto = window.location.protocol === "http:" ? "ws" : "wss";
-      const ws = new WebSocket(`${proto}://${window.location.host}`);
-      ws.onmessage = (event) => {
-        const h2 = document.createElement("h2");
-        h2.innerHTML = event.data;
-        document.body.append("h2");
-      };
-    </script>
-  </body>
+<html>
+<head>
+	<title>Websocket Demo</title>
+</head>
+
+<body>
+</body>
+<script>
+
+let ws;
+try {
+  // Choose correct websocket proto
+  const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${proto}://${window.location.host}`);
+} catch(e) {
+  // 
+}
+ws.onmessage = (event) => {console.log(event.data) }
+
+</script>
+
 </html>
