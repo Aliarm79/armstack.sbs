@@ -13,6 +13,16 @@ server.listen(PORT, function () {
   console.log("Listening on " + PORT);
 });
 
+process.on("SIGINT", () => {
+  console.log("SIGINT");
+  wss.clients.forEach((client) => {
+    client.close();
+  });
+  server.close(() => {
+    shutdoenDB();
+  });
+});
+
 /** Websocket **/
 const WebSocketServer = require("ws").Server;
 
@@ -28,6 +38,10 @@ wss.on("connection", function connection(ws) {
   if (ws.readyState === ws.OPEN) {
     ws.send("welcome!");
   }
+  db.run(`INSERT INTO visitors (count, time)
+    VALUES (${numClients}, datetime('now'))
+    
+    `);
 
   ws.on("close", function close() {
     wss.broadcast(`Current visitors: ${wss.clients.size}`);
@@ -39,11 +53,6 @@ wss.on("connection", function connection(ws) {
   });
 });
 
-/**
- * Broadcast data to all connected clients
- * @param  {Object} data
- * @void
- */
 wss.broadcast = function broadcast(data) {
   console.log("Broadcasting: ", data);
   wss.clients.forEach(function each(client) {
@@ -51,3 +60,31 @@ wss.broadcast = function broadcast(data) {
   });
 };
 /** End Websocket **/
+/** Begin database **/
+
+const sqlite = require("sqlite3");
+const db = new sqlite.Database(":memory:");
+
+db.serialize(() => {
+  db.run(`
+      CREATE TABLE visitors(
+      count INTEGER,
+      time Text
+      )
+
+    
+    `);
+});
+
+function getCounts() {
+  db.each(`SELECT * FROM visitors `, (err, row) => {
+    console.log(row);
+  });
+}
+
+function shutdoenDB() {
+  getCounts();
+  console.log("shutting down db");
+  db.close();
+}
+/** End database **/
